@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>บันทึกการกินนมทะเล</title>
-    <!-- โหลดฟอนต์ Mitr ครบทุกน้ำหนัก -->
+    
+    <!-- โหลดฟอนต์ Mitr ครบถ้วน -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Mitr:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com/css2?family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- โหลดไลบรารีสำหรับวาดกราฟ Donut & Line -->
     <script src="https://jsdelivr.net"></script>
+    
     <style>
         :root {
             --bg-color: #161920;
@@ -25,8 +29,7 @@
             box-sizing: border-box; 
             margin: 0; 
             padding: 0; 
-            font-family: 'Mitr', -apple-system, sans-serif !important;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Mitr', sans-serif !important;
         }
         
         html, body { 
@@ -60,7 +63,6 @@
             flex-direction: column;
         }
 
-        /* Tab Menu สไตล์พรีเมียมนุ่มนวล */
         .tab-menu {
             display: flex; 
             background: #13161c; 
@@ -74,13 +76,11 @@
         .tab-btn {
             flex: 1; 
             font-size: 1rem; 
-            font-weight: 400; 
             border: none; 
             border-radius: 14px;
             background: transparent; 
             color: var(--text-sub); 
             cursor: pointer; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
             text-align: center;
         }
         .tab-btn.active {
@@ -103,7 +103,6 @@
         }
         .tab-content.active { display: flex; }
 
-        /* แถวบนสุด วันที่ + ความสำเร็จ */
         .top-grid { 
             display: grid; 
             grid-template-columns: 1.2fr 0.8fr; 
@@ -121,7 +120,6 @@
             justify-content: center; 
             position: relative;
         }
-
         .donut-card {
             align-items: center;
             justify-content: center;
@@ -139,11 +137,9 @@
             font-size: 0.95rem; 
             margin-bottom: 8px; 
             color: var(--text-sub); 
-            font-weight: 400; 
             padding-left: 4px;
         }
         
-        /* Input สไตล์จมลึกแบบพรีเมียม */
         input[type="number"], input[type="datetime-local"] {
             width: 100%; 
             padding: 16px; 
@@ -154,14 +150,8 @@
             color: #ffffff; 
             outline: none;
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -3px -3px 8px var(--shadow-light);
-            transition: all 0.2s ease;
-        }
-        input:focus {
-            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -4px -4px 10px var(--shadow-light);
-            color: var(--green-glow);
         }
 
-        /* ปุ่มอึเรียงแถวสวยงาม */
         .poop-container { 
             display: flex; 
             gap: 12px; 
@@ -178,8 +168,6 @@
             box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); 
             cursor: pointer; 
             color: var(--text-sub); 
-            font-weight: 500;
-            transition: all 0.2s ease;
         }
         .poop-box:checked + .poop-label {
             box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); 
@@ -187,12 +175,11 @@
             background: #14171d;
         }
 
-        /* แถวล่าง น้ำหนัก + ตั้งค่า */
         .bottom-grid { 
             display: grid; 
             grid-template-columns: 1fr auto; 
             gap: 16px; 
-            margin-bottom: auto; /* ดันปุ่มบันทึกลงล่างสุด */
+            margin-bottom: auto; 
             align-items: flex-end;
         }
         
@@ -208,13 +195,8 @@
             justify-content: center; 
             align-items: center; 
             font-size: 1.4rem;
-            transition: all 0.2s ease;
-        }
-        .settings-btn:active { 
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); 
         }
 
-        /* ปุ่มบันทึกใหญ่เด่นสะดุดตา */
         .submit-btn {
             width: 100%; 
             height: 62px; 
@@ -226,18 +208,12 @@
             color: #ffffff; 
             box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3), 6px 6px 12px var(--shadow-dark);
             cursor: pointer; 
-            transition: all 0.2s ease;
             margin-top: 10px;
         }
-        .submit-btn:active { 
-            transform: scale(0.98);
-            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2);
-        }
 
-        .status { font-size: 0.95rem; text-align: center; height: 24px; margin-top: 8px; font-weight: 300; }
+        .status { font-size: 0.95rem; text-align: center; height: 24px; margin-top: 8px; }
         .success { color: var(--green-glow); } .loading { color: var(--orange-glow); } .error { color: #ef4444; }
 
-        /* หน้าสถิติแบ่งครึ่งสมมาตร */
         .chart-card {
             background: #191c24; 
             border-radius: 24px; 
@@ -249,7 +225,7 @@
             flex-direction: column;
         }
         .chart-card:last-child { margin-bottom: 0; }
-        .chart-title { font-size: 0.95rem; color: var(--text-sub); font-weight: 400; margin-bottom: 12px; }
+        .chart-title { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 12px; }
         .chart-wrapper { flex-grow: 1; width: 100%; position: relative; }
     </style>
 </head>
@@ -262,16 +238,19 @@
         </div>
 
         <div class="main-content">
-            <!-- TAB 1: กรอกข้อมูล -->
+            <!-- TAB 1 -->
             <div id="tab1" class="tab-content active">
                 <div class="top-grid">
                     <div class="neu-card" style="justify-content: space-around;">
                         <label for="datetime">วันที่ / เวลา</label>
                         <input type="datetime-local" id="datetime" required style="font-size:1rem; padding:10px;">
                     </div>
+                    <!-- ส่วน Donut Chart ความสำเร็จของเป้าหมาย -->
                     <div class="neu-card donut-card">
-                        <canvas id="donutChart" style="max-height: 65px; max-width: 65px;"></canvas>
-                        <div id="donutPercent" style="position: absolute; font-size: 0.9rem; font-weight: 600; color: #ffffff;">0%</div>
+                        <div style="position: relative; width: 65px; height: 65px; display: flex; align-items: center; justify-content: center;">
+                            <canvas id="donutChart" width="65" height="65"></canvas>
+                            <div id="donutPercent" style="position: absolute; font-size: 0.85rem; font-weight: 600; color: #ffffff;">0%</div>
+                        </div>
                     </div>
                 </div>
 
@@ -302,7 +281,7 @@
                 <button type="submit" class="submit-btn" id="submitBtn" onclick="submitData(event)">บันทึกข้อมูล</button>
             </div>
 
-            <!-- TAB 2: สถิติ -->
+            <!-- TAB 2 -->
             <div id="tab2" class="tab-content">
                 <div class="chart-card">
                     <div class="chart-title">📊 ปริมาณกินนมรวมรายวัน (ออนซ์)</div>
@@ -319,13 +298,12 @@
     <script>
         const WEB_APP_URL = 'https://google.com';
 
-        // ระบบจดจำข้อมูลบนเครื่องเพื่อความเร็วแสง (Instant Local Data)
-        let dailyGoal = localStorage.getItem('milkGoal') || 24;
+        let dailyGoal = parseFloat(localStorage.getItem('milkGoal')) || 24;
         let todayProgress = parseFloat(localStorage.getItem('todayMilk')) || 0;
         let localStats = JSON.parse(localStorage.getItem('localStats')) || {
             days: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
-            milkData: [0, 0, 0, 0, 0, 0, 0],
-            weightData: [0, 0, 0, 0, 0, 0, 0]
+            milkData:,
+            weightData:
         };
 
         function switchTab(tabId) {
@@ -336,7 +314,6 @@
             if(tabId === 'tab2') { renderLineCharts(); }
         }
 
-        // ตั้งเวลาปัจจุบันอัตโนมัติ
         function setNowTime() {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -344,21 +321,47 @@
         }
         setNowTime();
 
-        // กราฟ Donut หน้าแรก
-        const ctxDonut = document.getElementById('donutChart').getContext('2d');
-        let donutChart = new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: { datasets: [{ data: [todayProgress, Math.max(0, dailyGoal - todayProgress)], backgroundColor: ['#4ade80', '#2d3341'], borderWidth: 0 }] },
-            options: { cutout: '78%', plugins: { tooltip: { enabled: false } } }
-        });
+        // บังคับวาดกราฟโดนัท (Donut Chart) ทันทีที่เปิดใช้งานหน้าเว็บ
+        let donutChart;
+        function initDonut() {
+            const ctxDonut = document.getElementById('donutChart').getContext('2d');
+            
+            // คัดสรรสัดส่วนวงกลมที่สมดุล
+            let consumed = todayProgress;
+            let remaining = Math.max(0, dailyGoal - todayProgress);
+            if (consumed === 0 && remaining === 0) { remaining = dailyGoal; }
+
+            donutChart = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [consumed, remaining],
+                        backgroundColor: ['#4ade80', '#2d3341'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '76%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { tooltip: { enabled: false } }
+                }
+            });
+            updatePercentText();
+        }
+
+        function updatePercentText() {
+            let percentage = Math.min(Math.round((todayProgress / dailyGoal) * 100), 100);
+            if (isNaN(percentage)) percentage = 0;
+            document.getElementById('donutPercent').innerText = percentage + '%';
+        }
 
         function updateDonutUI() {
-            let percentage = Math.min(Math.round((todayProgress / dailyGoal) * 100), 100);
-            document.getElementById('donutPercent').innerText = percentage + '%';
+            if(!donutChart) return;
             donutChart.data.datasets[0].data = [todayProgress, Math.max(0, dailyGoal - todayProgress)];
             donutChart.update();
+            updatePercentText();
         }
-        updateDonutUI();
 
         function setGoal() {
             let newGoal = prompt("ตั้งเป้าหมายการกินนมต่อวัน (ออนซ์):", dailyGoal);
@@ -369,35 +372,29 @@
             }
         }
 
-        // บันทึกแบบ Realtime อัปเดตฝั่งผู้ใช้ทันที แล้วส่งไปชีตเบื้องหลัง (Background Sync)
         function submitData(e) {
             e.preventDefault();
             const milkInput = document.getElementById('milk_amount');
             const weightInput = document.getElementById('weight');
             if(!milkInput.value) { alert('กรุณากรอกปริมาณนม'); return; }
 
-            const submitBtn = document.getElementById('submitBtn');
             const statusMessage = document.getElementById('statusMessage');
-            
-            // 1. อัปเดตหน้าจอทันที ไม่ต้องรอดึงเน็ต
             const inputMilk = parseFloat(milkInput.value);
             const inputWeight = parseFloat(weightInput.value) || 0;
             const currentDayIdx = new Date(document.getElementById('datetime').value).getDay();
 
+            // บันทึกฝั่งแอปเพื่อแสดงผล Realtime ข้อมูลเปลี่ยนทันทีหลังกดปุ่ม
             todayProgress += inputMilk;
             localStorage.setItem('todayMilk', todayProgress);
-            
             localStats.milkData[currentDayIdx] += inputMilk;
             if(inputWeight > 0) localStats.weightData[currentDayIdx] = inputWeight;
             localStorage.setItem('localStats', JSON.stringify(localStats));
             
             updateDonutUI();
 
-            // แจ้งสเตตัสบันทึกสำเร็จบนแอปทันที
             statusMessage.className = 'status success';
-            statusMessage.innerText = '⚡ อัปเดตข้อมูลบนแอปสำเร็จแล้ว (กำลังส่งลงชีต...)';
+            statusMessage.innerText = '⚡ อัปเดตเป้าหมายในแอปสำเร็จแล้ว';
 
-            // 2. ส่งข้อมูลไป Google Sheets หลังบ้านแบบเงียบๆ
             const poopCount = document.querySelectorAll('input[name="poop"]:checked').length;
             const formData = new FormData();
             formData.append('datetime', document.getElementById('datetime').value);
@@ -405,30 +402,19 @@
             formData.append('poop_count', poopCount);
             formData.append('weight', weightInput.value || 0);
 
-            // รีเซ็ตฟอร์มรอเลย
             milkInput.value = '';
             weightInput.value = '';
             document.querySelectorAll('.poop-box').forEach(cb => cb.checked = false);
             setNowTime();
 
+            // จัดส่งข้อมูลเข้าสู่ฐานข้อมูลหลังบ้าน
             fetch(WEB_APP_URL, { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success') {
-                    statusMessage.innerText = '✅ บันทึกข้อมูลลง Google Sheet เรียบร้อย';
-                }
-            })
-            .catch(() => {
-                statusMessage.className = 'status error';
-                statusMessage.innerText = '❌ ส่งลงชีตไม่สำเร็จ แต่ข้อมูลบนแอปยังอยู่';
-            })
-            .finally(() => {
-                setTimeout(() => { statusMessage.innerText = ''; }, 3000);
-            });
+            .catch(() => console.log("ส่งข้อมูลดีเลย์เนื่องจากเครือข่าย"));
+            
+            setTimeout(() => { statusMessage.innerText = ''; }, 2500);
         }
 
-        // โครงสร้างกราฟเส้นแสดงผลเร็ว
-        const chartConfig = (color) => ({
+        const chartConfig = () => ({
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: { 
@@ -439,39 +425,43 @@
         
         let milkChart, weightChart;
         function renderLineCharts() {
+            if(typeof Chart === 'undefined') return;
             if(milkChart) milkChart.destroy();
             if(weightChart) weightChart.destroy();
 
             milkChart = new Chart(document.getElementById('milkLineChart'), {
                 type: 'line', 
-                data: { labels: localStats.days, datasets: [{ data: localStats.milkData, borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.1)', fill: true, tension: 0.3, pointRadius: 3 }] }, 
+                data: { labels: localStats.days, datasets: [{ data: localStats.milkData, borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.05)', fill: true, tension: 0.3, pointRadius: 3 }] }, 
                 options: chartConfig()
             });
 
             weightChart = new Chart(document.getElementById('weightLineChart'), {
                 type: 'line', 
-                data: { labels: localStats.days, datasets: [{ data: localStats.weightData, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3, pointRadius: 3 }] }, 
+                data: { labels: localStats.days, datasets: [{ data: localStats.weightData, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.05)', fill: true, tension: 0.3, pointRadius: 3 }] }, 
                 options: chartConfig()
             });
         }
 
-        // คอยดึงข้อมูลซิงค์กับ Google Sheet จริงเมื่อเปิดแอป (ถ้าเน็ตช้าก็ไม่กระทบการทำงานแอป)
-        function syncWithServer() {
-            fetch(WEB_APP_URL + '?action=getStats')
-            .then(res => res.json())
-            .then(data => {
-                if(data.days) {
-                    localStats.milkData = data.milkData;
-                    localStats.weightData = data.weightData;
-                    localStorage.setItem('localStats', JSON.stringify(localStats));
-                    
-                    todayProgress = data.todayMilk || 0;
-                    localStorage.setItem('todayMilk', todayProgress);
-                    updateDonutUI();
-                }
-            }).catch(e => console.log("ใช้ข้อมูลออฟไลน์บนเครื่องชั่วคราว"));
+        // ซิงค์ฐานข้อมูลร่วมกับคลาวด์หลังแอปพร้อมทำงาน
+        function lazySyncServer() {
+            initDonut(); // บังคับสร้างวงกลมทันที
+            setTimeout(() => {
+                fetch(WEB_APP_URL + '?action=getStats')
+                .then(res => res.json())
+                .then(data => {
+                    if(data.days) {
+                        localStats.milkData = data.milkData;
+                        localStats.weightData = data.weightData;
+                        localStorage.setItem('localStats', JSON.stringify(localStats));
+                        todayProgress = data.todayMilk || 0;
+                        localStorage.setItem('todayMilk', todayProgress);
+                        updateDonutUI();
+                    }
+                }).catch(e => console.log("เชื่อมต่อเซิร์ฟเวอร์ดีเลย์"));
+            }, 800);
         }
-        window.onload = syncWithServer;
+
+        document.addEventListener('DOMContentLoaded', lazySyncServer);
     </script>
 </body>
 </html>
