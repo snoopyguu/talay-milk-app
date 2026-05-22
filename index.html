@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- โหลดไลบรารีสำหรับวาดกราฟ Donut & Line -->
+    <!-- โหลดไลบรารีสำหรับวาดกราฟ -->
     <script src="https://jsdelivr.net"></script>
     
     <style>
@@ -38,21 +38,21 @@
             width: 100%;
             height: 100%; 
             overflow: hidden;
-            position: fixed;
         }
 
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
-            padding-top: calc(16px + env(safe-area-inset-top));
-            padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
         }
         
+        /* กล่องรองรับการขยายตัวเมื่อเปิดบนเบราว์เซอร์ PC */
         .phone-container {
             width: 100%; 
-            max-width: 412px; 
+            max-width: 412px; /* ขนาดมาตรฐานบนมือถือ */
             height: 100%;
             max-height: 840px;
             background: linear-gradient(145deg, #1e222b, #14171d); 
@@ -61,8 +61,10 @@
             box-shadow: 20px 20px 40px var(--shadow-dark), -10px -10px 30px var(--shadow-light); 
             display: flex; 
             flex-direction: column;
+            transition: max-width 0.4s ease, max-height 0.4s ease;
         }
 
+        /* เมนูสลับแถบหน้าจอ */
         .tab-menu {
             display: flex; 
             background: #13161c; 
@@ -82,6 +84,7 @@
             color: var(--text-sub); 
             cursor: pointer; 
             text-align: center;
+            transition: all 0.2s ease;
         }
         .tab-btn.active {
             background: linear-gradient(145deg, #222731, #1a1e26); 
@@ -214,6 +217,7 @@
         .status { font-size: 0.95rem; text-align: center; height: 24px; margin-top: 8px; }
         .success { color: var(--green-glow); } .loading { color: var(--orange-glow); } .error { color: #ef4444; }
 
+        /* ปรับสถิติให้เหมาะสมกับอัตราส่วน PC */
         .chart-card {
             background: #191c24; 
             border-radius: 24px; 
@@ -227,6 +231,58 @@
         .chart-card:last-child { margin-bottom: 0; }
         .chart-title { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 12px; }
         .chart-wrapper { flex-grow: 1; width: 100%; position: relative; }
+
+        /* ================= ปรับแต่งการจัดวางสำหรับหน้าจอ PC ================= */
+        @media (min-width: 768px) {
+            body {
+                overflow: auto; /* ปล่อยอิสระให้พอดีหน้าต่างเบราว์เซอร์ใหญ่ */
+            }
+            .phone-container {
+                max-width: 900px; /* ขยายกว้างขึ้นในโหมด PC เพื่อความสมดุล */
+                height: 680px;
+                max-height: 90vh;
+                padding: 30px;
+            }
+            #tab1 {
+                display: none;
+                grid-template-columns: 1fr 1fr; /* แบ่งครึ่งฝั่งกรอกข้อมูลกับสรุปเป้าหมายบน PC */
+                gap: 24px;
+                height: 100%;
+            }
+            #tab1.active { display: grid; }
+            
+            .top-grid {
+                grid-template-columns: 1fr;
+                height: 100%;
+                margin-bottom: 0;
+            }
+            .left-fields {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 100%;
+            }
+            .right-summary {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 100%;
+            }
+            .donut-card {
+                flex-grow: 1;
+                margin-bottom: 20px;
+            }
+            /* จัดรูปแบบหน้าสถิติให้เรียงคู่ ซ้าย-ขวา แทนการซ้อนบน-ล่าง */
+            #tab2.active {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            .chart-card {
+                height: 100%;
+                margin-bottom: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -238,50 +294,55 @@
         </div>
 
         <div class="main-content">
-            <!-- TAB 1 -->
+            <!-- TAB 1: บันทึกข้อมูล -->
             <div id="tab1" class="tab-content active">
-                <div class="top-grid">
-                    <div class="neu-card" style="justify-content: space-around;">
-                        <label for="datetime">วันที่ / เวลา</label>
-                        <input type="datetime-local" id="datetime" required style="font-size:1rem; padding:10px;">
+                <!-- โครงสร้างรองรับ PC Left Side -->
+                <div class="left-fields">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="milk_amount">ปริมาณนมที่กิน (ออนซ์)</label>
+                        <input type="number" id="milk_amount" placeholder="0.0" step="0.1" required inputmode="decimal">
                     </div>
-                    <!-- ส่วน Donut Chart ความสำเร็จของเป้าหมาย -->
-                    <div class="neu-card donut-card">
-                        <div style="position: relative; width: 65px; height: 65px; display: flex; align-items: center; justify-content: center;">
-                            <canvas id="donutChart" width="65" height="65"></canvas>
-                            <div id="donutPercent" style="position: absolute; font-size: 0.85rem; font-weight: 600; color: #ffffff;">0%</div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>จำนวนครั้งการอึในรอบนี้</label>
+                        <div class="poop-container">
+                            <input type="checkbox" id="p1" name="poop" value="1" class="poop-box"><label for="p1" class="poop-label">1</label>
+                            <input type="checkbox" id="p2" name="poop" value="1" class="poop-box"><label for="p2" class="poop-label">2</label>
+                            <input type="checkbox" id="p3" name="poop" value="1" class="poop-box"><label for="p3" class="poop-label">3</label>
+                            <input type="checkbox" id="p4" name="poop" value="1" class="poop-box"><label for="p4" class="poop-label">4</label>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="milk_amount">ปริมาณนมที่กิน (ออนซ์)</label>
-                    <input type="number" id="milk_amount" placeholder="0.0" step="0.1" required inputmode="decimal">
-                </div>
-
-                <div class="form-group">
-                    <label>จำนวนครั้งการอึในรอบนี้</label>
-                    <div class="poop-container">
-                        <input type="checkbox" id="p1" name="poop" value="1" class="poop-box"><label for="p1" class="poop-label">1</label>
-                        <input type="checkbox" id="p2" name="poop" value="1" class="poop-box"><label for="p2" class="poop-label">2</label>
-                        <input type="checkbox" id="p3" name="poop" value="1" class="poop-box"><label for="p3" class="poop-label">3</label>
-                        <input type="checkbox" id="p4" name="poop" value="1" class="poop-box"><label for="p4" class="poop-label">4</label>
+                    <div class="bottom-grid">
+                        <div>
+                            <label for="weight">น้ำหนักวันนี้ (กก.)</label>
+                            <input type="number" id="weight" placeholder="0.0" step="0.01" inputmode="decimal">
+                        </div>
+                        <button type="button" class="settings-btn" onclick="setGoal()">⚙️</button>
                     </div>
                 </div>
 
-                <div class="bottom-grid">
-                    <div>
-                        <label for="weight">น้ำหนักวันนี้ (กก.)</label>
-                        <input type="number" id="weight" placeholder="0.0" step="0.01" inputmode="decimal">
+                <!-- โครงสร้างรองรับ PC Right Side -->
+                <div class="right-summary">
+                    <div class="top-grid">
+                        <div class="neu-card" style="justify-content: space-around;">
+                            <label for="datetime">วันที่ / เวลา</label>
+                            <input type="datetime-local" id="datetime" required style="font-size:1rem; padding:10px;">
+                        </div>
+                        <div class="neu-card donut-card">
+                            <div style="position: relative; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="donutChart" width="75" height="75"></canvas>
+                                <div id="donutPercent" style="position: absolute; font-size: 0.95rem; font-weight: 600; color: #ffffff;">0%</div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="settings-btn" onclick="setGoal()">⚙️</button>
+                    
+                    <div id="statusMessage" class="status"></div>
+                    <button type="submit" class="submit-btn" id="submitBtn" onclick="submitData(event)">บันทึกข้อมูล</button>
                 </div>
-                
-                <div id="statusMessage" class="status"></div>
-                <button type="submit" class="submit-btn" id="submitBtn" onclick="submitData(event)">บันทึกข้อมูล</button>
             </div>
 
-            <!-- TAB 2 -->
+            <!-- TAB 2: สถิติประจำสัปดาห์ -->
             <div id="tab2" class="tab-content">
                 <div class="chart-card">
                     <div class="chart-title">📊 ปริมาณกินนมรวมรายวัน (ออนซ์)</div>
@@ -310,7 +371,11 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            
+            // ค้นหาปุ่มที่ถูกกด
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabId));
+            if(activeBtn) activeBtn.classList.add('active');
+            
             if(tabId === 'tab2') { renderLineCharts(); }
         }
 
@@ -321,15 +386,11 @@
         }
         setNowTime();
 
-        // บังคับวาดกราฟโดนัท (Donut Chart) ทันทีที่เปิดใช้งานหน้าเว็บ
         let donutChart;
         function initDonut() {
             const ctxDonut = document.getElementById('donutChart').getContext('2d');
-            
-            // คัดสรรสัดส่วนวงกลมที่สมดุล
             let consumed = todayProgress;
             let remaining = Math.max(0, dailyGoal - todayProgress);
-            if (consumed === 0 && remaining === 0) { remaining = dailyGoal; }
 
             donutChart = new Chart(ctxDonut, {
                 type: 'doughnut',
@@ -358,7 +419,7 @@
 
         function updateDonutUI() {
             if(!donutChart) return;
-            donutChart.data.datasets[0].data = [todayProgress, Math.max(0, dailyGoal - todayProgress)];
+            donutChart.data.datasets.data = [todayProgress, Math.max(0, dailyGoal - todayProgress)];
             donutChart.update();
             updatePercentText();
         }
@@ -383,7 +444,6 @@
             const inputWeight = parseFloat(weightInput.value) || 0;
             const currentDayIdx = new Date(document.getElementById('datetime').value).getDay();
 
-            // บันทึกฝั่งแอปเพื่อแสดงผล Realtime ข้อมูลเปลี่ยนทันทีหลังกดปุ่ม
             todayProgress += inputMilk;
             localStorage.setItem('todayMilk', todayProgress);
             localStats.milkData[currentDayIdx] += inputMilk;
@@ -393,7 +453,7 @@
             updateDonutUI();
 
             statusMessage.className = 'status success';
-            statusMessage.innerText = '⚡ อัปเดตเป้าหมายในแอปสำเร็จแล้ว';
+            statusMessage.innerText = '⚡ บันทึกข้อมูลสำเร็จ';
 
             const poopCount = document.querySelectorAll('input[name="poop"]:checked').length;
             const formData = new FormData();
@@ -407,9 +467,8 @@
             document.querySelectorAll('.poop-box').forEach(cb => cb.checked = false);
             setNowTime();
 
-            // จัดส่งข้อมูลเข้าสู่ฐานข้อมูลหลังบ้าน
             fetch(WEB_APP_URL, { method: 'POST', body: formData })
-            .catch(() => console.log("ส่งข้อมูลดีเลย์เนื่องจากเครือข่าย"));
+            .catch(() => console.log("เครือข่ายขัดข้อง"));
             
             setTimeout(() => { statusMessage.innerText = ''; }, 2500);
         }
@@ -442,9 +501,8 @@
             });
         }
 
-        // ซิงค์ฐานข้อมูลร่วมกับคลาวด์หลังแอปพร้อมทำงาน
         function lazySyncServer() {
-            initDonut(); // บังคับสร้างวงกลมทันที
+            initDonut();
             setTimeout(() => {
                 fetch(WEB_APP_URL + '?action=getStats')
                 .then(res => res.json())
@@ -457,7 +515,7 @@
                         localStorage.setItem('todayMilk', todayProgress);
                         updateDonutUI();
                     }
-                }).catch(e => console.log("เชื่อมต่อเซิร์ฟเวอร์ดีเลย์"));
+                }).catch(e => console.log("ใช้โหมดออฟไลน์"));
             }, 800);
         }
 
