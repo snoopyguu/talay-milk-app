@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>บันทึกการกินนมทะเล</title>
+    <!-- นำเข้าฟอนต์ Mitr จาก Google Fonts -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- นำเข้า Chart.js -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Mitr', sans-serif; 
+            font-weight: 400;
+        }
+        
+        /* บังคับไม่ให้เกิดการ Scroll บนหน้าจอทุกยี่ห้อ */
+        html, body { 
+            background-color: #1e222b; 
+            color: #e2e8f0; 
+            width: 100%;
+            height: 100%; 
+            overflow: hidden;
+            position: fixed;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            /* รองรับขอบดำ/รอยบากของ iPhone 13mini, 14 */
+            padding-top: calc(12px + env(safe-area-inset-top));
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+        
+        /* ปรับขนาดกล่องแอปให้ยืด-หด ยึดพื้นที่ความสูงพอดีหน้าจอ */
+        .phone-container {
+            width: 100%; 
+            max-width: 450px; 
+            height: 100%;
+            background: #1e222b; 
+            border-radius: 35px; 
+            padding: 20px 16px;
+            box-shadow: 12px 12px 24px #12151a, -12px -12px 24px #2a2f3c; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* เมนูสลับหน้า */
+        .tab-menu {
+            display: flex; 
+            background: #1e222b; 
+            border-radius: 16px; 
+            padding: 4px;
+            box-shadow: inset 4px 4px 8px #12151a, inset -4px -4px 8px #2a2f3c; 
+            height: 50px;
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            flex: 1; 
+            font-size: 0.95rem; 
+            font-weight: 500; 
+            border: none; 
+            border-radius: 12px;
+            background: transparent; 
+            color: #a0aec0; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: #1e222b; 
+            color: #4ade80;
+            box-shadow: 4px 4px 8px #12151a, -4px -4px 8px #2a2f3c;
+        }
+
+        /* พื้นที่เนื้อหาหลักด้านใน */
+        .main-content {
+            flex-grow: 1;
+            margin: 12px 0;
+            position: relative;
+            height: calc(100% - 70px); /* หักลบพื้นที่ปุ่มและเมนูออก */
+        }
+
+        .tab-content { 
+            display: none; 
+            height: 100%;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .tab-content.active { display: flex; }
+
+        /* แถวบน (วันที่ + โดนัท) */
+        .top-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            height: 18%; 
+            min-height: 80px;
+        }
+        .neu-card {
+            background: #1e222b; 
+            border-radius: 20px; 
+            padding: 8px;
+            box-shadow: 5px 5px 10px #12151a, -5px -5px 10px #2a2f3c;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center;
+            position: relative;
+        }
+
+        .form-group { 
+            height: 18%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        }
+        label { 
+            display: block; 
+            font-size: 0.95rem; 
+            margin-bottom: 4px; 
+            color: #a0aec0; 
+            font-weight: 500; 
+        }
+        
+        input[type="number"], input[type="datetime-local"] {
+            width: 100%; 
+            padding: 10px 14px; 
+            font-size: 1.15rem; 
+            border: none; 
+            border-radius: 12px;
+            background: #1e222b; 
+            color: #ffffff; 
+            outline: none;
+            box-shadow: inset 4px 4px 8px #12151a, inset -4px -4px 8px #2a2f3c;
+        }
+
+        /* แผง Checkbox อึ */
+        .poop-container { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: space-between; 
+            width: 100%;
+        }
+        .poop-box { display: none; }
+        .poop-label {
+            flex: 1; 
+            padding: 8px 0; 
+            font-size: 1.1rem; 
+            text-align: center; 
+            background: #1e222b; 
+            border-radius: 10px;
+            box-shadow: 4px 4px 8px #12151a, -4px -4px 8px #2a2f3c; 
+            cursor: pointer; 
+            color: #a0aec0; 
+            font-weight: 600;
+        }
+        .poop-box:checked + .poop-label {
+            box-shadow: inset 3px 3px 6px #12151a, inset -3px -3px 6px #2a2f3c; 
+            color: #f6ad55;
+        }
+
+        /* แถวน้ำหนัก + ตั้งค่า */
+        .bottom-row { 
+            display: grid; 
+            grid-template-columns: 4fr 1fr; 
+            gap: 12px; 
+            height: 18%;
+            align-items: flex-end; 
+        }
+        
+        .settings-btn {
+            width: 100%; 
+            height: 44px; 
+            background: #1e222b; 
+            border: none; 
+            border-radius: 12px;
+            box-shadow: 5px 5px 10px #12151a, -5px -5px 10px #2a2f3c; 
+            cursor: pointer;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 1.2rem;
+        }
+        .settings-btn:active { box-shadow: inset 3px 3px 6px #12151a, inset -3px -3px 6px #2a2f3c; }
+
+        /* ปุ่มบันทึกข้อมูลหลัก */
+        .submit-btn {
+            width: 100%; 
+            height: 54px; 
+            font-size: 1.2rem; 
+            font-weight: 500; 
+            border: none; 
+            border-radius: 16px;
+            background: #1e222b; 
+            color: #4ade80; 
+            box-shadow: 6px 6px 12px #12151a, -6px -6px 12px #2a2f3c;
+            cursor: pointer; 
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+        .submit-btn:active { box-shadow: inset 4px 4px 8px #12151a, inset -4px -4px 8px #2a2f3c; }
+
+        /* สถานะแจ้งเตือน */
+        .status { font-size: 0.95rem; text-align: center; height: 20px; line-height: 20px; margin-top: 4px; }
+        .success { color: #4ade80; } .loading { color: #f6ad55; } .error { color: #f56565; }
+
+        /* การ์ดหน้าสถิติ แบ่งพื้นที่กันคนละครึ่งพอดี (50/50) */
+        .chart-card {
+            background: #1e222b; 
+            border-radius: 16px; 
+            padding: 10px; 
+            height: 48%;
+            box-shadow: inset 3px 3px 6px #12151a, inset -3px -3px 6px #2a2f3c;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .chart-title { font-size: 0.9rem; color: #a0aec0; font-weight: 500; height: 15%; }
+        .chart-wrapper { height: 85%; width: 100%; position: relative; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <!-- แถบเมนูบน -->
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchTab('tab1')">บันทึกการกินนมทะเล</button>
+            <button class="tab-btn" onclick="switchTab('tab2')">สถิติ</button>
+        </div>
+
+        <!-- พื้นที่เนื้อหาปรับขนาดตามความสูงจออัตโนมัติ -->
+        <div class="main-content">
+            
+            <!-- TAB 1: บันทึกข้อมูล -->
+            <div id="tab1" class="tab-content active">
+                <div class="top-row">
+                    <div class="neu-card">
+                        <label for="datetime" style="font-size:0.85rem; margin-bottom: 2px;">วันที่ / เวลา</label>
+                        <input type="datetime-local" id="datetime" required style="font-size:0.8rem; padding:6px; border-radius:8px;">
+                    </div>
+                    <div class="neu-card">
+                        <canvas id="donutChart" style="max-height: 55px; max-width: 55px;"></canvas>
+                        <div id="donutPercent" style="position: absolute; font-size: 0.8rem; font-weight: 500; color: #ffffff;">0%</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="milk_amount">ปริมาณนมที่กิน (ออนซ์)</label>
+                    <input type="number" id="milk_amount" placeholder="0.0" step="0.1" required inputmode="decimal">
+                </div>
+
+                <div class="form-group">
+                    <label>จำนวนครั้งการอึในรอบนี้</label>
+                    <div class="poop-container">
+                        <input type="checkbox" id="p1" name="poop" value="1" class="poop-box"><label for="p1" class="poop-label">1</label>
+                        <input type="checkbox" id="p2" name="poop" value="1" class="poop-box"><label for="p2" class="poop-label">2</label>
+                        <input type="checkbox" id="p3" name="poop" value="1" class="poop-box"><label for="p3" class="poop-label">3</label>
+                        <input type="checkbox" id="p4" name="poop" value="1" class="poop-box"><label for="p4" class="poop-label">4</label>
+                    </div>
+                </div>
+
+                <div class="bottom-row">
+                    <div>
+                        <label for="weight">น้ำหนักวันนี้ (กก.)</label>
+                        <input type="number" id="weight" placeholder="0.0" step="0.01" inputmode="decimal">
+                    </div>
+                    <div>
+                        <button type="button" class="settings-btn" onclick="setGoal()">⚙️</button>
+                    </div>
+                </div>
+                
+                <div id="statusMessage" class="status"></div>
+            </div>
+
+            <!-- TAB 2: สถิติประจำสัปดาห์ -->
+            <div id="tab2" class="tab-content">
+                <div class="chart-card">
+                    <div class="chart-title">📊 ปริมาณกินนมรายสัปดาห์ (ออนซ์)</div>
+                    <div class="chart-wrapper"><canvas id="milkLineChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">⚖️ ปริมาณน้ำหนักรายสัปดาห์ (กิโลกรัม)</div>
+                    <div class="chart-wrapper"><canvas id="weightLineChart"></canvas></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ปุ่มกดหลักฟิกซ์ไว้ล่างสุดเสมอ -->
+        <button type="submit" class="submit-btn" id="submitBtn" onclick="submitData(event)">บันทึกข้อมูล</button>
+    </div>
+
+    <script>
+        // ระบบควบคุมแถบหน้าจอ
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            const submitBtn = document.getElementById('submitBtn');
+            if(tabId === 'tab2') { 
+                submitBtn.style.display = 'none'; // ซ่อนปุ่มเมื่อไปหน้าสถิติ
+                loadChartsData(); 
+            } else {
+                submitBtn.style.display = 'block'; // โชว์ปุ่มเฉพาะหน้ากรอกข้อมูล
+            }
+        }
+
+        // ตั้งค่าเวลาปัจจุบันแบบอัตโนมัติ
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
+
+        // ระบบเป้าหมายนมประจำวัน
+        let dailyGoal = localStorage.getItem('milkGoal') || 24;
+        let currentProgress = 0;
+
+        const ctxDonut = document.getElementById('donutChart').getContext('2d');
+        let donutChart = new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: { datasets: [{ data: [0, dailyGoal], backgroundColor: ['#4ade80', '#2a2f3c'], borderWidth: 0 }] },
+            options: { cutout: '75%', plugins: { tooltip: { enabled: false } } }
+        });
+
+        function updateDonutChart() {
+            let percentage = Math.min(Math.round((currentProgress / dailyGoal) * 100), 100);
+            document.getElementById('donutPercent').innerText = percentage + '%';
+            donutChart.data.datasets.data = [currentProgress, Math.max(0, dailyGoal - currentProgress)];
+            donutChart.update();
+        }
+        updateDonutChart();
+
+        function setGoal() {
+            let newGoal = prompt("ตั้งเป้าหมายการกินนมต่อวัน (ออนซ์):", dailyGoal);
+            if(newGoal && !isNaN(newGoal)) {
+                dailyGoal = parseFloat(newGoal);
+                localStorage.setItem('milkGoal', dailyGoal);
+                updateDonutChart();
+            }
+        }
+
+        // ลิงก์ระบบหลังบ้าน Google Sheets ของคุณ
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzCG0VPcbApIsmKPgWsUl1SseuEMPNZqKlrQKUA4wmtJDaX-wwkuoWSK8p_6QMD-lIcRg/exec';
+
+        function submitData(e) {
+            e.preventDefault();
+            const milkAmountInput = document.getElementById('milk_amount');
+            if(!milkAmountInput.value) { alert('กรุณากรอกปริมาณนม'); return; }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            submitBtn.disabled = true;
+            statusMessage.className = 'status loading';
+            statusMessage.innerText = '⏳ กำลังบันทึก...';
+
+            const poopCount = document.querySelectorAll('input[name="poop"]:checked').length;
+            const formData = new FormData();
+            formData.append('datetime', document.getElementById('datetime').value);
+            formData.append('milk_amount', milkAmountInput.value);
+            formData.append('poop_count', poopCount);
+            formData.append('weight', document.getElementById('weight').value || 0);
+
+            currentProgress += parseFloat(milkAmountInput.value);
+            updateDonutChart();
+
+            fetch(WEB_APP_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success') {
+                    statusMessage.className = 'status success';
+                    statusMessage.innerText = '✅ บันทึกสำเร็จ';
+                    milkAmountInput.value = '';
+                    document.getElementById('weight').value = '';
+                    document.querySelectorAll('.poop-box').forEach(cb => cb.checked = false);
+                } else { throw new Error(); }
+            })
+            .catch(() => {
+                statusMessage.className = 'status error';
+                statusMessage.innerText = '❌ บันทึกไม่สำเร็จ';
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                setTimeout(() => { statusMessage.innerText = ''; }, 3000);
+            });
+        }
+
+        // ระบบกราฟเส้นหน้าสถิติ ปรับดีไซน์ให้อ่านง่ายบนแอปมือถือ
+        const commonOptions = { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { 
+                y: { grid: { color: '#2a2f3c' }, ticks: { font: { family: 'Mitr', size: 10 }, color: '#a0aec0' } }, 
+                x: { grid: { display: false }, ticks: { font: { family: 'Mitr', size: 10 }, color: '#a0aec0' } } 
+            } 
+        };
+        
+        let milkLine = new Chart(document.getElementById('milkLineChart'), {
+            type: 'line', data: { labels: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'], datasets: [{ data: [0, 0, 0, 0, 0, 0, 0], borderColor: '#4ade80', tension: 0.3, pointRadius: 2 }] }, options: commonOptions
+        });
+
+        let weightLine = new Chart(document.getElementById('weightLineChart'), {
+            type: 'line', data: { labels: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'], datasets: [{ data: [0, 0, 0, 0, 0, 0, 0], borderColor: '#f6ad55', tension: 0.3, pointRadius: 2 }] }, options: commonOptions
+        });
+
+        function loadChartsData() {
+            fetch(WEB_APP_URL + '?action=getStats')
+            .then(res => res.json())
+            .then(data => {
+                if(data.days) {
+                    milkLine.data.labels = data.days;
+                    milkLine.data.datasets[0].data = data.milkData;
+                    milkLine.update();
+
+                    weightLine.data.labels = data.days;
+                    weightLine.data.datasets[0].data = data.weightData;
+                    weightLine.update();
+                    
+                    currentProgress = data.todayMilk || 0;
+                    updateDonutChart();
+                }
+            }).catch(err => console.log("เกิดข้อผิดพลาดในการดึงข้อมูลสถิติย้อนหลัง"));
+        }
+    </script>
+</body>
+</html>
